@@ -258,7 +258,7 @@ def equal(child, popI):
     numOfFea = child.shape[0]
     for j in range(numOfFea):
         if (child[j] <> popI[j]):
-            return 0;
+            return 0
     return 1
    
 #------------------------------------------------------------------------------
@@ -388,7 +388,8 @@ def main():
     fileW = createAnOutputFile()
     model = svm.SVR()
 
-    numOfPop = 200    # should be 200 population
+    numOfPop = 50    # should be 200 population, lower is faster but less accurate
+    numOfFea = 385    # should be 385 descriptors
     unfit = 1000
 
     # Final model requirements
@@ -399,11 +400,12 @@ def main():
     TrainX, TrainY, ValidateX, ValidateY, TestX, TestY = FromDataFileSVM_GA.getAllOfTheData()
     TrainX, ValidateX, TestX = FromDataFileSVM_GA.rescaleTheData(TrainX, ValidateX, TestX)
 
-    numOfFea = TrainX.shape[1]  # should be 396 descriptors
+    #numOfFea = TrainX.shape[1]  # should be 396 descriptors
 
     model = svm.SVR()
 
-    unfit = 1000
+    unfit = 1000 # when to stop when the model isn't doing well
+
     fittingStatus = unfit
     while (fittingStatus == unfit):
         population = createInitialPopulation(numOfPop,numOfFea)
