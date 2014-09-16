@@ -257,7 +257,7 @@ def findTheChild(mom, dad):
 def equal(child, popI):
     numOfFea = child.shape[0]
     for j in range(numOfFea):
-	if (child[j] <> popI[j]):
+        if (child[j] <> popI[j]):
             return 0;
     return 1
    
@@ -389,7 +389,6 @@ def main():
     model = svm.SVR()
 
     numOfPop = 200    # should be 200 population
-    numOfFea = 396  # should be 396 descriptors
     unfit = 1000
 
     # Final model requirements
@@ -399,24 +398,26 @@ def main():
 
     TrainX, TrainY, ValidateX, ValidateY, TestX, TestY = FromDataFileSVM_GA.getAllOfTheData()
     TrainX, ValidateX, TestX = FromDataFileSVM_GA.rescaleTheData(TrainX, ValidateX, TestX)
-    
+
+    numOfFea = TrainX.shape[1]  # should be 396 descriptors
+
     model = svm.SVR()
-    
+
     unfit = 1000
     fittingStatus = unfit
     while (fittingStatus == unfit):
         population = createInitialPopulation(numOfPop,numOfFea)
         fittingStatus, fitness = FromFinessFileSVM_GA.validate_model(model,fileW, population,
                         TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
-        
+
     elite1, elite2, elite1Index, elite2Index = findElites(fitness, population)
     sumOfFitnesses = AddFitnessForFindingParents(fitness)
-   
-    print "Starting the Loop - time is = ", time.strftime("%H:%M:%S", time.localtime()) 
+
+    print "Starting the Loop - time is = ", time.strftime("%H:%M:%S", time.localtime())
     IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
                    elite1, elite2, elite1Index, elite2Index,
                    TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
-    
+
     return
 
 #main program ends in here
