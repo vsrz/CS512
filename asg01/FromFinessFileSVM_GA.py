@@ -1,27 +1,30 @@
-import time                 # provides timing for benchmarks
-from numpy   import *        # provides complex math and array functions
-from sklearn import svm	    # provides Support Vector Regression
+import time  # provides timing for benchmarks
+from numpy import *  # provides complex math and array functions
+from sklearn import svm  # provides Support Vector Regression
 import csv
 import math
 import sys
 import hashlib
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 def r2(y, yHat):
     """Coefficient of determination"""
-    numer = ((y - yHat)**2).sum()       # Residual Sum of Squares
-    denom = ((y - y.mean())**2).sum()
-    r2 = 1 - numer/denom
+    numer = ((y - yHat) ** 2).sum()  # Residual Sum of Squares
+    denom = ((y - y.mean()) ** 2).sum()
+    r2 = 1 - numer / denom
     return r2
+
+
 #------------------------------------------------------------------------------
 
 def r2Pred(yTrain, yTest, yHatTest):
-    numer = ((yHatTest - yTest)**2).sum()
-    denom = ((yTest - yTrain.mean())**2).sum()
-    r2Pred = 1 - numer/denom
+    numer = ((yHatTest - yTest) ** 2).sum()
+    denom = ((yTest - yTrain.mean()) ** 2).sum()
+    r2Pred = 1 - numer / denom
     return r2Pred
+
 
 #------------------------------------------------------------------------------
 
@@ -31,15 +34,17 @@ def see(p, y, yHat):
     (Root mean square error)
     """
     n = y.shape[0]
-    numer = ((y - yHat)**2).sum()
+    numer = ((y - yHat) ** 2).sum()
     denom = n - p - 1
     if (denom == 0):
         s = 0
-    elif ( (numer/denom) <0 ):
+    elif ( (numer / denom) < 0 ):
         s = 0.001
     else:
-        s = (numer/denom)** 0.5
+        s = (numer / denom) ** 0.5
     return s
+
+
 #------------------------------------------------------------------------------
 
 def sdep(y, yHat):
@@ -49,26 +54,28 @@ def sdep(y, yHat):
     """
     n = y.shape[0]
 
-    numer = ((y - yHat)**2).sum()
+    numer = ((y - yHat) ** 2).sum()
 
-    sdep = (numer/n)**0.5
+    sdep = (numer / n) ** 0.5
 
     return sdep
+
+
 #------------------------------------------------------------------------------
 
 
 def ccc(y, yHat):
     """Concordance Correlation Coefficient"""
     n = y.shape[0]
-    numer = 2*(((y - y.mean())*(yHat - yHat.mean())).sum())
-    denom = ((y - y.mean())**2).sum() + ((yHat - yHat.mean())**2).sum() + n*((y.mean() - yHat.mean())**2)
-    ccc = numer/denom
+    numer = 2 * (((y - y.mean()) * (yHat - yHat.mean())).sum())
+    denom = ((y - y.mean()) ** 2).sum() + ((yHat - yHat.mean()) ** 2).sum() + n * ((y.mean() - yHat.mean()) ** 2)
+    ccc = numer / denom
     return ccc
+
 
 #------------------------------------------------------------------------------
 
 def ccc_adj(ccc, n, p):
-
     """
     Adjusted CCC
     Parameters
@@ -77,23 +84,27 @@ def ccc_adj(ccc, n, p):
     p : int -- Number of parameters
     
     """
-    ccc_adj = ((n - 1)*ccc - p)/(n - p - 1)
+    ccc_adj = ((n - 1) * ccc - p) / (n - p - 1)
     return ccc_adj
+
 
 #------------------------------------------------------------------------------
 
 def q2F3(yTrain, yTest, yHatTest):
-    numer = (((yTest - yHatTest)**2).sum())/yTest.shape[0]
-    denom = (((yTrain - yTrain.mean())**2).sum())/yTrain.shape[0]
-    q2F3 = 1 - numer/denom
+    numer = (((yTest - yHatTest) ** 2).sum()) / yTest.shape[0]
+    denom = (((yTrain - yTrain.mean()) ** 2).sum()) / yTrain.shape[0]
+    q2F3 = 1 - numer / denom
     return q2F3
+
+
 #------------------------------------------------------------------------------
 
 def k(y, yHat):
     """Compute slopes"""
-    k = ((y*yHat).sum())/((yHat**2).sum())
-    kP = ((y*yHat).sum())/((y**2).sum())
+    k = ((y * yHat).sum()) / ((yHat ** 2).sum())
+    kP = ((y * yHat).sum()) / ((y ** 2).sum())
     return k, kP
+
 
 #------------------------------------------------------------------------------
 
@@ -106,25 +117,26 @@ def r0(y, yHat, k, kP):
     kP : float -- Slope
     
     """
-    numer = ((yHat - k*yHat)**2).sum()
-    denom = ((yHat - yHat.mean())**2).sum()
-    r2_0 = 1 - numer/denom
-    numer = ((y - kP*y)**2).sum()
-    denom = ((y - y.mean())**2).sum()
-    rP2_0 = 1 - numer/denom
+    numer = ((yHat - k * yHat) ** 2).sum()
+    denom = ((yHat - yHat.mean()) ** 2).sum()
+    r2_0 = 1 - numer / denom
+    numer = ((y - kP * y) ** 2).sum()
+    denom = ((y - y.mean()) ** 2).sum()
+    rP2_0 = 1 - numer / denom
     return r2_0, rP2_0
+
 
 #------------------------------------------------------------------------------
 
 def r2m(r2, r20):
     """Roy Validation Metrics"""
-    r2m = r2*(1 - (r2 - r20)**0.5)
+    r2m = r2 * (1 - (r2 - r20) ** 0.5)
     return r2m
+
 
 #------------------------------------------------------------------------------
 
 def r2m_adj(r2m, n, p):
-
     """
     Adjusted r2m 
     Parameters
@@ -133,8 +145,9 @@ def r2m_adj(r2m, n, p):
     p : int -- Number of predictor variables
     
     """
-    r2m_adj = ((n - 1)*r2m - p)/(n - p - 1)
+    r2m_adj = ((n - 1) * r2m - p) / (n - p - 1)
     return r2m_adj
+
 
 #------------------------------------------------------------------------------
 
@@ -145,52 +158,56 @@ def r2p(r2, r2r):
     r2r : float --Average r^2 of y-randomized models.
     
     """
-    r2p = r2*((r2 - r2r)**0.5)
+    r2p = r2 * ((r2 - r2r) ** 0.5)
     return r2p
+
 
 #------------------------------------------------------------------------------
 
 def rSquared(y, yPred):
-	"""Find the coefficient  of correlation for an actual and predicted set.
-	
-	Parameters
-	----------
-	y : 1D array -- Actual values.
-	yPred : 1D array -- Predicted values.
-	
-	Returns 
-	-------
-	out : float -- Coefficient  of correlation.
-	
-	"""
+    """Find the coefficient  of correlation for an actual and predicted set.
 
-	rss = ((y - yPred)**2).sum()   # Residual Sum of Squares
-	sst = ((y - y.mean())**2).sum()   # Total Sum of Squares
-	r2 = 1 - (rss/sst)
+    Parameters
+    ----------
+    y : 1D array -- Actual values.
+    yPred : 1D array -- Predicted values.
 
-	return r2
+    Returns
+    -------
+    out : float -- Coefficient  of correlation.
+
+    """
+
+    rss = ((y - yPred) ** 2).sum()  # Residual Sum of Squares
+    sst = ((y - y.mean()) ** 2).sum()  # Total Sum of Squares
+    r2 = 1 - (rss / sst)
+
+    return r2
+
 
 #------------------------------------------------------------------------------
 
 def rmse(X, Y):
-	"""
-	Calculate the root-mean-square error (RMSE) also known as root mean
-	square deviation (RMSD).
-	
-	Parameters
-	----------
-	X : array_like -- Assumed to be 1D.
-	Y : array_like -- Assumed to be the same shape as X.
-	
-	Returns
-	-------
-	out : float64
-	"""
+    """
+    Calculate the root-mean-square error (RMSE) also known as root mean
+    square deviation (RMSD).
 
-	X = asarray(X, dtype=float64)
-	Y = asarray(Y, dtype=float64)
-	
-	return (sum((X-Y)**2)/len(X))**.5
+    Parameters
+    ----------
+    X : array_like -- Assumed to be 1D.
+    Y : array_like -- Assumed to be the same shape as X.
+
+    Returns
+    -------
+    out : float64
+    """
+
+    X = asarray(X, dtype=float64)
+    Y = asarray(Y, dtype=float64)
+
+    return (sum((X - Y) ** 2) / len(X)) ** .5
+
+
 #------------------------------------------------------------------------------
 
 def cv_predict(set_x, set_y, model):
@@ -202,6 +219,7 @@ def cv_predict(set_x, set_y, model):
         model = model.fit(train_x, train_y)
         yhat[idx] = model.predict(set_x[idx])
     return yhat
+
 
 #------------------------------------------------------------------------------
 #Ahmad Hadaegh: Modified  on: July 16, 2013
@@ -221,16 +239,17 @@ def calc_fitness(xi, Y, Yhat, c=2):
     out: float -- Fitness for the given data.
     
     """
-    
-    p = sum(xi)   # Number of selected parameters
-    n = len(Y)    # Sample size
-    numer = ((Y - Yhat)**2).sum()/n   # Mean square error
-    pcn = p*(c/n)
+
+    p = sum(xi)  # Number of selected parameters
+    n = len(Y)  # Sample size
+    numer = ((Y - Yhat) ** 2).sum() / n  # Mean square error
+    pcn = p * (c / n)
     if pcn >= 1:
         return 1000
-    denom = (1 - pcn)**2
-    theFitness = numer/denom
+    denom = (1 - pcn) ** 2
+    theFitness = numer / denom
     return theFitness
+
 
 #------------------------------------------------------------------------------
 #Ahmad Hadaegh: Modified  on: July 16, 2013
@@ -246,9 +265,11 @@ def InitializeTracks():
     trackSEETrain = {}
     trackSDEPValidation = {}
     trackSDEPTest = {}
-    return  trackDesc, trackIdx, trackFitness, trackModel, trackR2, trackQ2, \
-            trackR2PredValidation, trackR2PredTest, trackSEETrain, \
-            trackSDEPValidation, trackSDEPTest
+    return trackDesc, trackIdx, trackFitness, trackModel, trackR2, trackQ2, \
+           trackR2PredValidation, trackR2PredTest, trackSEETrain, \
+           trackSDEPValidation, trackSDEPTest
+
+
 #------------------------------------------------------------------------------
 #Ahmad Hadaegh: Modified  on: July 16, 2013
 def initializeYDimension():
@@ -259,31 +280,33 @@ def initializeYDimension():
     yHatValidation = {}
     yTest = {}
     yHatTest = {}
-    return yTrain, yHatTrain, yHatCV, yValidation, yHatValidation, yTest, yHatTest 
+    return yTrain, yHatTrain, yHatCV, yValidation, yHatValidation, yTest, yHatTest
+
+
 #------------------------------------------------------------------------------
 def OnlySelectTheOnesColumns(popI):
     numOfFea = popI.shape[0]
     xi = zeros(numOfFea)
     for j in range(numOfFea):
-       xi[j] = popI[j]
+        xi[j] = popI[j]
 
     xi = xi.nonzero()[0]
     xi = xi.tolist()
     return xi
- 
+
+
 #------------------------------------------------------------------------------
 
 #Ahmad Hadaegh: Modified  on: July 16, 2013
 def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, ValidateY, TestX, TestY):
-    
     numOfPop = population.shape[0]
     fitness = zeros(numOfPop)
     c = 2
     false = 0
     true = 1
     predictive = false
-    
-    trackDesc, trackIdx, trackFitness,trackModel,trackR2, trackQ2, \
+
+    trackDesc, trackIdx, trackFitness, trackModel, trackR2, trackQ2, \
     trackR2PredValidation, trackR2PredTest, trackSEETrain, \
     trackSDEPValidation, trackSDEPTest = InitializeTracks()
 
@@ -294,35 +317,35 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
     itFits = 1
     for i in range(numOfPop):
         xi = OnlySelectTheOnesColumns(population[i])
-        
-        idx = hashlib.sha1(array(xi)).digest() # Hash
+
+        idx = hashlib.sha1(array(xi)).digest()  # Hash
         if idx in trackFitness.keys():
             # don't recalculate everything if the model has already been validated
             fitness[i] = trackFitness[idx]
             continue
-        
+
         X_train_masked = TrainX.T[xi].T
         X_validation_masked = ValidateX.T[xi].T
         X_test_masked = TestX.T[xi].T
-      
+
         try:
             model_desc = model.fit(X_train_masked, TrainY)
         except:
             return unfit, fitness
-        
+
         # Computed predicted values
-        Yhat_cv = cv_predict(X_train_masked, TrainY, model)    # Cross Validation
+        Yhat_cv = cv_predict(X_train_masked, TrainY, model)  # Cross Validation
         Yhat_validation = model.predict(X_validation_masked)
         Yhat_test = model.predict(X_test_masked)
-            
+
         # Compute R2 statistics (Prediction for Valiation and Test set)
         q2_loo = r2(TrainY, Yhat_cv)
         r2pred_validation = r2Pred(TrainY, ValidateY, Yhat_validation)
         r2pred_test = r2Pred(TrainY, TestY, Yhat_test)
-                      
+
         Y_fitness = append(TrainY, ValidateY)
         Yhat_fitness = append(Yhat_cv, Yhat_validation)
-            
+
         fitness[i] = calc_fitness(xi, Y_fitness, Yhat_fitness, c)
 
         #print "predictive is: ", predictive
@@ -330,16 +353,16 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
             # if it's not worth recording, just return the fitness
             print "ending the program because of predictive is: ", predictive
             continue
-            
+
         # Compute predicted Y_hat for training set.
         Yhat_train = model.predict(X_train_masked)
         r2_train = r2(TrainY, Yhat_train)
-   
+
         # Standard error of estimate
         s = see(X_train_masked.shape[1], TrainY, Yhat_train)
         sdep_validation = sdep(ValidateY, Yhat_validation)
         sdep_test = sdep(TrainY, Yhat_train)
-            
+
         idxLength = len(xi)
 
         # store stats
@@ -348,7 +371,7 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
         trackFitness[idx] = fitness[i]
 
         trackModel[idx] = model_desc
-        
+
         trackR2[idx] = r2_train
         trackQ2[idx] = q2_loo
         trackR2PredValidation[idx] = r2pred_validation
@@ -364,30 +387,31 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
         yHatValidation[idx] = Yhat_validation.tolist()
         yTest[idx] = TestY.tolist()
         yHatTest[idx] = Yhat_test.tolist()
-        
-        
+
+
     #printing the information into the file
-    write(model,fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2,\
-                trackQ2,trackR2PredValidation, trackR2PredTest, trackSEETrain, \
-                trackSDEPValidation,trackSDEPTest,yTrain, yHatTrain, yHatCV, \
-                yValidation, yHatValidation, yTest, yHatTest)
-        
+    write(model, fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2, \
+          trackQ2, trackR2PredValidation, trackR2PredTest, trackSEETrain, \
+          trackSDEPValidation, trackSDEPTest, yTrain, yHatTrain, yHatCV, \
+          yValidation, yHatValidation, yTest, yHatTest)
+
     return itFits, fitness
-#------------------------------------------------------------------------------  
+
+
+#------------------------------------------------------------------------------
 #Ahmad Hadaegh: Modified  on: July 16, 2013
 
-def write(model,fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2, \
-          trackQ2,trackR2PredValidation, trackR2PredTest, trackSEETrain, \
-          trackSDEPValidation,trackSDEPTest,yTrain, yHatTrain, yHatCV, \
-          yValidation, yHatValidation, yTest, yHatTest): 
-    
+def write(model, fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2, \
+          trackQ2, trackR2PredValidation, trackR2PredTest, trackSEETrain, \
+          trackSDEPValidation, trackSDEPTest, yTrain, yHatTrain, yHatCV, \
+          yValidation, yHatValidation, yTest, yHatTest):
     for key in trackFitness.keys():
         fileW.writerow([trackDesc[key], trackIdx[key], trackFitness[key], trackModel[key], \
-            trackR2[key], trackQ2[key], trackR2PredValidation[key], trackR2PredTest[key], \
-            trackSEETrain[key], trackSDEPValidation[key], trackSDEPTest[key], \
-            yTrain[key], yHatTrain[key], yHatCV[key], yValidation[key], yHatValidation[key], \
-            yTest[key], yHatTest[key]])
-    #fileOut.close()
+                        trackR2[key], trackQ2[key], trackR2PredValidation[key], trackR2PredTest[key], \
+                        trackSEETrain[key], trackSDEPValidation[key], trackSDEPTest[key], \
+                        yTrain[key], yHatTrain[key], yHatCV[key], yValidation[key], yHatValidation[key], \
+                        yTest[key], yHatTest[key]])
+        #fileOut.close()
 
 #------------------------------------------------------------------------------
 
