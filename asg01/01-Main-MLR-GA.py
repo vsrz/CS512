@@ -7,11 +7,6 @@ import math
 import sys
 import hashlib
 
-
-
-# ------------------------------------------------------------------------------
-
-
 def r2(y, yHat):
     """Coefficient of determination"""
     numer = ((y - yHat) ** 2).sum()  # Residual Sum of Squares
@@ -19,17 +14,11 @@ def r2(y, yHat):
     r2 = 1 - numer / denom
     return r2
 
-
-#------------------------------------------------------------------------------
-
 def r2Pred(yTrain, yTest, yHatTest):
     numer = ((yHatTest - yTest) ** 2).sum()
     denom = ((yTest - yTrain.mean()) ** 2).sum()
     r2Pred = 1 - numer / denom
     return r2Pred
-
-
-#------------------------------------------------------------------------------
 
 def see(p, y, yHat):
     """
@@ -63,156 +52,6 @@ def sdep(y, yHat):
 
     return sdep
 
-
-#------------------------------------------------------------------------------
-
-
-def ccc(y, yHat):
-    """Concordance Correlation Coefficient"""
-    n = y.shape[0]
-    numer = 2 * (((y - y.mean()) * (yHat - yHat.mean())).sum())
-    denom = ((y - y.mean()) ** 2).sum() + ((yHat - yHat.mean()) ** 2).sum() + n * ((y.mean() - yHat.mean()) ** 2)
-    ccc = numer / denom
-    return ccc
-
-
-#------------------------------------------------------------------------------
-
-def ccc_adj(ccc, n, p):
-    """
-    Adjusted CCC
-    Parameters
-    ----------
-    n : int -- Sample size
-    p : int -- Number of parameters
-
-    """
-    ccc_adj = ((n - 1) * ccc - p) / (n - p - 1)
-    return ccc_adj
-
-
-#------------------------------------------------------------------------------
-
-def q2F3(yTrain, yTest, yHatTest):
-    numer = (((yTest - yHatTest) ** 2).sum()) / yTest.shape[0]
-    denom = (((yTrain - yTrain.mean()) ** 2).sum()) / yTrain.shape[0]
-    q2F3 = 1 - numer / denom
-    return q2F3
-
-
-#------------------------------------------------------------------------------
-
-def k(y, yHat):
-    """Compute slopes"""
-    k = ((y * yHat).sum()) / ((yHat ** 2).sum())
-    kP = ((y * yHat).sum()) / ((y ** 2).sum())
-    return k, kP
-
-
-#------------------------------------------------------------------------------
-
-def r0(y, yHat, k, kP):
-    """
-    Compute correlation for regression lines through the origin
-    Parameters
-    ----------
-    k  : float -- Slope
-    kP : float -- Slope
-
-    """
-    numer = ((yHat - k * yHat) ** 2).sum()
-    denom = ((yHat - yHat.mean()) ** 2).sum()
-    r2_0 = 1 - numer / denom
-    numer = ((y - kP * y) ** 2).sum()
-    denom = ((y - y.mean()) ** 2).sum()
-    rP2_0 = 1 - numer / denom
-    return r2_0, rP2_0
-
-
-#------------------------------------------------------------------------------
-
-def r2m(r2, r20):
-    """Roy Validation Metrics"""
-    r2m = r2 * (1 - (r2 - r20) ** 0.5)
-    return r2m
-
-
-#------------------------------------------------------------------------------
-
-def r2m_adj(r2m, n, p):
-    """
-    Adjusted r2m
-    Parameters
-    ----------
-    n : int -- Number of observations
-    p : int -- Number of predictor variables
-
-    """
-    r2m_adj = ((n - 1) * r2m - p) / (n - p - 1)
-    return r2m_adj
-
-
-#------------------------------------------------------------------------------
-
-def r2p(r2, r2r):
-    """
-    Parameters
-    ----------
-    r2r : float --Average r^2 of y-randomized models.
-
-    """
-    r2p = r2 * ((r2 - r2r) ** 0.5)
-    return r2p
-
-
-#------------------------------------------------------------------------------
-
-def rSquared(y, yPred):
-    """Find the coefficient  of correlation for an actual and predicted set.
-
-    Parameters
-    ----------
-    y : 1D array -- Actual values.
-    yPred : 1D array -- Predicted values.
-
-    Returns
-    -------
-    out : float -- Coefficient  of correlation.
-
-    """
-
-    rss = ((y - yPred) ** 2).sum()  # Residual Sum of Squares
-    sst = ((y - y.mean()) ** 2).sum()  # Total Sum of Squares
-    r2 = 1 - (rss / sst)
-
-    return r2
-
-
-#------------------------------------------------------------------------------
-
-def rmse(X, Y):
-    """
-    Calculate the root-mean-square error (RMSE) also known as root mean
-    square deviation (RMSD).
-
-    Parameters
-    ----------
-    X : array_like -- Assumed to be 1D.
-    Y : array_like -- Assumed to be the same shape as X.
-
-    Returns
-    -------
-    out : float64
-    """
-
-    X = asarray(X, dtype=float64)
-    Y = asarray(Y, dtype=float64)
-
-    return (sum((X - Y) ** 2) / len(X)) ** .5
-
-
-#------------------------------------------------------------------------------
-
 def cv_predict(set_x, set_y, model):
     """Predict using cross validation."""
     yhat = empty_like(set_y)
@@ -222,10 +61,6 @@ def cv_predict(set_x, set_y, model):
         model = model.fit(train_x, train_y)
         yhat[idx] = model.predict(set_x[idx])
     return yhat
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def calc_fitness(xi, Y, Yhat, c=2):
     """
@@ -253,9 +88,6 @@ def calc_fitness(xi, Y, Yhat, c=2):
     theFitness = numer / denom
     return theFitness
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 def InitializeTracks():
     trackDesc = {}
     trackIdx = {}
@@ -272,9 +104,6 @@ def InitializeTracks():
            trackR2PredValidation, trackR2PredTest, trackSEETrain, \
            trackSDEPValidation, trackSDEPTest
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 def initializeYDimension():
     yTrain = {}
     yHatTrain = {}
@@ -285,8 +114,6 @@ def initializeYDimension():
     yHatTest = {}
     return yTrain, yHatTrain, yHatCV, yValidation, yHatValidation, yTest, yHatTest
 
-
-#------------------------------------------------------------------------------
 def OnlySelectTheOnesColumns(popI):
     numOfFea = popI.shape[0]
     xi = zeros(numOfFea)
@@ -297,10 +124,6 @@ def OnlySelectTheOnesColumns(popI):
     xi = xi.tolist()
     return xi
 
-
-#------------------------------------------------------------------------------
-
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, ValidateY, TestX, TestY):
     numOfPop = population.shape[0]
     fitness = zeros(numOfPop)
@@ -400,10 +223,6 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
 
     return itFits, fitness
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def write(model, fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2, \
           trackQ2, trackR2PredValidation, trackR2PredTest, trackSEETrain, \
           trackSDEPValidation, trackSDEPTest, yTrain, yHatTrain, yHatCV, \
@@ -417,16 +236,6 @@ def write(model, fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2, 
                 yTest[key], yHatTest[key]])
         #fileOut.close()
 
-#------------------------------------------------------------------------------
-
-
-
-# ------------------------------------------------------------------------------
-def getTwoDecPoint(x):
-    return float("%.2f" % x)
-
-
-#------------------------------------------------------------------------------
 def placeDataIntoArray(fileName):
     with open(fileName, mode='rbU') as csvfile:
         datareader = csv.reader(csvfile, delimiter=',', quotechar=' ')
@@ -438,7 +247,6 @@ def placeDataIntoArray(fileName):
         return dataArray
 
 
-#------------------------------------------------------------------------------
 def getAllOfTheData():
     TrainX = placeDataIntoArray('Train-Data.csv')
     TrainY = placeDataIntoArray('Train-pIC50.csv')
@@ -448,8 +256,6 @@ def getAllOfTheData():
     TestY = placeDataIntoArray('Test-pIC50.csv')
     return TrainX, TrainY, ValidateX, ValidateY, TestX, TestY
 
-
-#------------------------------------------------------------------------------
 
 def rescaleTheData(TrainX, ValidateX, TestX):
     # 1 degree of freedom means (ddof) N-1 unbiased estimation
@@ -465,25 +271,6 @@ def rescaleTheData(TrainX, ValidateX, TestX):
 
     return TrainX, ValidateX, TestX
 
-#------------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
-def writeTheHeader():
-    with open('GA-SVR.csv', 'ab') as csvfile:
-        modelwriter = csv.writer(csvfile)
-        modelwriter.writerow(['Descriptor Ids', 'Num of desc',
-                              'Fitness', 'RMSE', 'TrainR2', 'RMSEValidate',
-                              'ValidateR2', 'TestR2', 'Model', 'Localtime'])
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def getAValidrow(numOfFea, eps=0.015):
     sum = 0;
     while (sum < 3):
@@ -496,20 +283,6 @@ def getAValidrow(numOfFea, eps=0.015):
                 V[j] = 0
         sum = V.sum()
     return V
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
-def createPopulationArray(numOfPop, numOfFea):
-    population = random.random((numOfPop, numOfFea))
-    for i in range(numOfPop):
-        V = getAValidrow(numOfFea)
-        for j in range(numOfFea):
-            population[i][j] = V[j]
-    return population
-
 
 #------------------------------------------------------------------------------
 #Ahmad Hadaegh: Initial Prog: July 14, 2013
@@ -532,11 +305,6 @@ def findSecondElite(elite1Index, fitness, population):
         elite2[j] = population[elite2Index][j]
 
     return elite2, elite2Index
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def findFirstElite(fitness, population):
     numOfPop = population.shape[0]
@@ -563,11 +331,6 @@ def findElites(fitness, population):
     elite2, elite2Index = findSecondElite(elite1Index, fitness, population)
     return elite1, elite2, elite1Index, elite2Index
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def AddFitnessForFindingParents(fitness):
     numOfPop = fitness.shape[0]
     sumFitnesses = zeros(numOfPop)
@@ -575,11 +338,6 @@ def AddFitnessForFindingParents(fitness):
         sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
 
     return sumFitnesses
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def OnePointCrossOver(mom, dad):
     numOfFea = mom.shape[0]
@@ -592,11 +350,6 @@ def OnePointCrossOver(mom, dad):
         child[j] = dad[j]
 
     return child
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def find1st2ndAnd3rdPoints(numOfFea):
     point1 = int(random.uniform(0, numOfFea))
@@ -614,10 +367,6 @@ def find1st2ndAnd3rdPoints(numOfFea):
     return p1, p2, p3
 
 
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def find1stAnd2ndPoints(numOfFea):
     point1 = int(random.uniform(0, numOfFea))
     point2 = point1
@@ -631,47 +380,6 @@ def find1stAnd2ndPoints(numOfFea):
         p2 = point2
     return p1, p2
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
-def TwoPointsCrossOver(mom, dad):
-    numOfFea = mom.shape[0]
-    p1, p2 = find1stAnd2ndPoints(numOfFea)
-    child = zeros(numOfFea)
-    for j in range(numOfFea):
-        child[j] = mom[j]
-
-    for i in range(p1 - 1, p2):
-        child[i] = dad[i]
-
-    return child
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
-def ThreePointsCrossOver(mom, dad):
-    numOfFea = mom.shape[0]
-    p1, p2, p3 = find1st2ndAnd3rdPoints(numOfFea)
-    child = zeros(numOfFea)
-    for j in range(numOfFea):
-        child[j] = mom[j]
-
-    for i in range(p1 - 1, p2):
-        child[i] = dad[i]
-    for i in range(p3 - 1, numOfFea):
-        child[i] = dad[i]
-
-    return child
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def mutate(child):
     numOfFea = child.shape[0]
     for i in range(numOfFea):
@@ -680,13 +388,8 @@ def mutate(child):
             child[i] = 1 - child[i]
     return child
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-# uses the Roulette Wheel methed to choose an index. So the 
+# uses the Roulette Wheel methed to choose an index. So the
 # ones with higher probablilities are more likely to be chosen
-
 def chooseAnIndexFromPopulation(sumOfFitnesses, population):
     numOfPop = sumOfFitnesses.shape[0]
     p = random.uniform(0, sumOfFitnesses[numOfPop - 1])
@@ -697,11 +400,6 @@ def chooseAnIndexFromPopulation(sumOfFitnesses, population):
         return i
     else:
         return numOfPop - 1
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def findTheParents(sumOfFitnesses, population):
     numOfFea = population.shape[1]
@@ -716,22 +414,10 @@ def findTheParents(sumOfFitnesses, population):
         mom[j] = population[momIndex][j]
     return mom, dad
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def findTheChild(mom, dad):
     child = OnePointCrossOver(mom, dad)
-    #child = TwoPointsCrossOver(mom, dad)
-    #child = ThreePointsCrossOver(mom, dad)
     child = mutate(child)
     return child
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def equal(child, popI):
     numOfFea = child.shape[0]
@@ -740,11 +426,6 @@ def equal(child, popI):
             return 0
     return 1
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def IsChildUnique(upToRowI, child, population):
     numOfFea = child.shape[0]
     for i in range(upToRowI):
@@ -752,11 +433,6 @@ def IsChildUnique(upToRowI, child, population):
             if (equal(child, population[i])):
                 return 0
     return 1
-
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def findNewPopulation(elite1, elite2, sumOfFitnesses, population):
     numOfPop = population.shape[0]
@@ -780,11 +456,6 @@ def findNewPopulation(elite1, elite2, sumOfFitnesses, population):
 
     return population
 
-
-#-----------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 def createInitialPopulation(numOfPop, numOfFea):
     population = random.random((numOfPop, numOfFea))
     for i in range(numOfPop):
@@ -793,8 +464,6 @@ def createInitialPopulation(numOfPop, numOfFea):
             population[i][j] = V[j]
     return population
 
-
-#------------------------------------------------------------------------------
 def checkterTerminationStatus(Times, oldFitness, minimumFitness):
     if (Times == 30):
         print "***** No need to continue. The fitness not changed in the last 30 generation"
@@ -807,12 +476,6 @@ def checkterTerminationStatus(Times, oldFitness, minimumFitness):
         print "\n***** time is = ", time.strftime("%H:%M:%S", time.localtime())
         print "******************** Times is set back to 0 ********************\n"
     return oldFitness, Times
-
-
-#------------------------------------------------------
-
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
 
 def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
                   elite1, elite2, elite1Index, elite2Index,
@@ -834,7 +497,7 @@ def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
         fittingStatus = unfit
         while (fittingStatus == unfit):
             population = findNewPopulation(elite1, elite2, sumOfFitnesses, population)
-            population = createInitialPopulation(numOfPop, numOfFea)
+            #population = createInitialPopulation(numOfPop, numOfFea)
             fittingStatus, fitness = validate_model(model, fileW,
                                                                          population, TrainX, TrainY, ValidateX,
                                                                          ValidateY, TestX, TestY)
@@ -846,9 +509,6 @@ def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
 
     return
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Modified  on: July 18, 2013
 def createAnOutputFile():
     file_name = None
     algorithm = None
@@ -867,31 +527,18 @@ def createAnOutputFile():
 
     return fileW
 
-
-#------------------------------------------------------------------------------
-#Ahmad Hadaegh: Initial Prog: July 14, 2013
-#Ahmad Hadaegh: Modified  on: July 16, 2013
-
 #main program starts in here
 def main():
     set_printoptions(threshold='nan')
 
     fileW = createAnOutputFile()
-    fileW = ''
-    #model = linear_model.LinearRegression()
-    model = svm.SVR()
+    #fileW = ''
+    model = linear_model.LinearRegression()
     numOfPop = 200  # should be 200 population, lower is faster but less accurate
     numOfFea = 385  # should be 385 descriptors
 
-    # Final model requirements
-    R2req_train = .8
-    R2req_validate = .5
-    R2req_test = .5
-
     TrainX, TrainY, ValidateX, ValidateY, TestX, TestY = getAllOfTheData()
     TrainX, ValidateX, TestX = rescaleTheData(TrainX, ValidateX, TestX)
-
-    #numOfFea = TrainX.shape[1]  # should be 396 descriptors
 
     unfit = 1000  # when to stop when the model isn't doing well
 
@@ -899,7 +546,7 @@ def main():
     while (fittingStatus == unfit):
         population = createInitialPopulation(numOfPop, numOfFea)
         fittingStatus, fitness = validate_model(model, fileW, population,
-                                                                     TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
+             TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
     elite1, elite2, elite1Index, elite2Index = findElites(fitness, population)
     sumOfFitnesses = AddFitnessForFindingParents(fitness)
@@ -911,10 +558,7 @@ def main():
 
     return
 
-#main program ends in here
-#------------------------------------------------------------------------------
 main()
-#------------------------------------------------------------------------------
 
 
 
