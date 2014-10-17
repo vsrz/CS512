@@ -149,7 +149,8 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
             # don't recalculate everything if the model has already been validated
             fitness[i] = trackFitness[idx]
             continue
-
+        print xi
+        iss = raw_input()
         X_train_masked = TrainX.T[xi].T
         X_validation_masked = ValidateX.T[xi].T
         X_test_masked = TestX.T[xi].T
@@ -164,7 +165,7 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
         Yhat_validation = model.predict(X_validation_masked)
         Yhat_test = model.predict(X_test_masked)
 
-        # Compute R2 statistics (Prediction for Valiation and Test set)
+        # Compute R2 statistics (Prediction for Validation and Test set)
         q2_loo = r2(TrainY, Yhat_cv)
         r2pred_validation = r2Pred(TrainY, ValidateY, Yhat_validation)
         r2pred_test = r2Pred(TrainY, TestY, Yhat_test)
@@ -348,13 +349,14 @@ def find1stAnd2ndPoints(numOfFea):
         p2 = point2
     return p1, p2
 
-def mutate(child):
-    numOfFea = child.shape[0]
+def mutate(pop):
+    numOfFea = pop.shape[0]
     for i in range(numOfFea):
         p = random.uniform(0, 100)
-        if (p < 0.005):
-            child[i] = 1 - child[i]
-    return child
+        # 5% chance of mutation on feature
+        if (p < 5):
+            pop[i] = abs(pop[i] - 1)
+    return pop
 
 # uses the Roulette Wheel methed to choose an index. So the
 # ones with higher probablilities are more likely to be chosen
@@ -368,24 +370,6 @@ def chooseAnIndexFromPopulation(sumOfFitnesses, population):
         return i
     else:
         return numOfPop - 1
-
-def findTheParents(sumOfFitnesses, population):
-    numOfFea = population.shape[1]
-    momIndex = chooseAnIndexFromPopulation(sumOfFitnesses, population)
-    dadIndex = chooseAnIndexFromPopulation(sumOfFitnesses, population)
-    while (dadIndex == momIndex):
-        dadIndex = chooseAnIndexFromPopulation(sumOfFitnesses, population)
-    dad = zeros(numOfFea)
-    mom = zeros(numOfFea)
-    for j in range(numOfFea):
-        dad[j] = population[dadIndex][j]
-        mom[j] = population[momIndex][j]
-    return mom, dad
-
-def findTheChild(mom, dad):
-    child = OnePointCrossOver(mom, dad)
-    child = mutate(child)
-    return child
 
 def equal(child, popI):
     numOfFea = child.shape[0]
@@ -409,16 +393,16 @@ def findNewPopulation(elite1, sumOfFitnesses, population):
     for j in range(numOfFea):
         population[0][j] = elite1[j]
 
-    for i in range(2, numOfPop):
-        uniqueRow = 0
-        sum = 0
-        while (sum < 3) or (not uniqueRow):
-            mom, dad = findTheParents(sumOfFitnesses, population)
-            child = findTheChild(mom, dad)
-            uniqueRow = IsChildUnique(i, child, population)
-            sum = child.sum()
-        for k in range(numOfFea):
-            population[i][k] = child[k]
+    for i in range(1, numOfPop):
+        rnd = getRandomRows(numOfPop,i)
+        mut = []
+        pop = []
+        for e in range(0, 3):
+            mut.append(population[rnd[e]])
+            pop.append(mutate(mut[e]))
+        population[i] = pop[random.randint(0,2)]
+    print population
+    r = raw_input()
     return population
 
 def createInitialPopulation(numOfPop, numOfFea):
@@ -462,9 +446,6 @@ def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
         fittingStatus = unfit
         while (fittingStatus == unfit):
             population = findNewPopulation(elite1, sumOfFitnesses, population)
-            print population
-            r = raw_input()
-            #population = createInitialPopulation(numOfPop, numOfFea)
             fittingStatus, fitness = validate_model(model, fileW,
                                                     population, TrainX, TrainY, ValidateX,
                                                     ValidateY, TestX, TestY)
@@ -509,8 +490,8 @@ def createAnOutputFile():
 def main():
     set_printoptions(threshold='nan')
 
-    fileW = createAnOutputFile()
-    #fileW = ''
+    #fileW = createAnOutputFile()
+    fileW = ''
     model = linear_model.LinearRegression()
     numOfPop = 5  # should be 200 population, lower is faster but less accurate
     numOfFea = 385  # should be 385 descriptors
