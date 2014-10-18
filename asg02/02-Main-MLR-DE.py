@@ -149,8 +149,7 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
             # don't recalculate everything if the model has already been validated
             fitness[i] = trackFitness[idx]
             continue
-        print xi
-        iss = raw_input()
+
         X_train_masked = TrainX.T[xi].T
         X_validation_masked = ValidateX.T[xi].T
         X_test_masked = TestX.T[xi].T
@@ -354,7 +353,7 @@ def mutate(pop):
     for i in range(numOfFea):
         p = random.uniform(0, 100)
         # 5% chance of mutation on feature
-        if (p < 5):
+        if (p < 0.05):
             pop[i] = abs(pop[i] - 1)
     return pop
 
@@ -401,8 +400,6 @@ def findNewPopulation(elite1, sumOfFitnesses, population):
             mut.append(population[rnd[e]])
             pop.append(mutate(mut[e]))
         population[i] = pop[random.randint(0,2)]
-    print population
-    r = raw_input()
     return population
 
 def createInitialPopulation(numOfPop, numOfFea):
@@ -414,11 +411,10 @@ def createInitialPopulation(numOfPop, numOfFea):
     return population
 
 def checkTerminationStatus(Times, oldFitness, minimumFitness):
-    if Times == 30:
+    if Times >= 30:
         print "***** No need to continue. The fitness not changed in the last 30 generation"
+        i = raw_input()
         exit(0)
-    elif oldFitness == minimumFitness:
-        Times = Times + 1
     elif minimumFitness < oldFitness:
         oldFitness = minimumFitness
         Times = 0
@@ -444,11 +440,19 @@ def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
             print "***********************************"
             exit(0)
         fittingStatus = unfit
-        while (fittingStatus == unfit):
+        while (fittingStatus == unfit and Times <= 30):
+            Times += 1
             population = findNewPopulation(elite1, sumOfFitnesses, population)
             fittingStatus, fitness = validate_model(model, fileW,
                                                     population, TrainX, TrainY, ValidateX,
                                                     ValidateY, TestX, TestY)
+            if (oldFitness < fitness.min()) :
+                it = 0
+                for j in fitness:
+                    if fitness.min() == j:
+                        feat = population[it]
+                    it += 1
+                fittingStatus = unfit
 
         elite1, elite1Index = findFirstElite(fitness, population)
         #adding all the fitnesses and storing them in one dimensional array for
@@ -493,7 +497,7 @@ def main():
     #fileW = createAnOutputFile()
     fileW = ''
     model = linear_model.LinearRegression()
-    numOfPop = 5  # should be 200 population, lower is faster but less accurate
+    numOfPop = 200  # should be 200 population, lower is faster but less accurate
     numOfFea = 385  # should be 385 descriptors
 
     TrainX, TrainY, ValidateX, ValidateY, TestX, TestY = getAllOfTheData()
