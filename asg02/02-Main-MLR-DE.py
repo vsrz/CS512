@@ -299,14 +299,6 @@ def findFirstElite(fitness, population):
 
     return elite1, elite1Index
 
-def AddFitnessForFindingParents(fitness):
-    numOfPop = fitness.shape[0]
-    sumFitnesses = zeros(numOfPop)
-    for i in range(0, numOfPop):
-        sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
-
-    return sumFitnesses
-
 def OnePointCrossOver(mom, dad):
     numOfFea = mom.shape[0]
     p = int(random.uniform(0, numOfFea - 1))
@@ -393,7 +385,7 @@ def findNewPopulation(elite1, sumOfFitnesses, population):
         population[0][j] = elite1[j]
 
     for i in range(1, numOfPop):
-        rnd = getRandomRows(numOfPop,i)
+        rnd = getThreeRandomRows(numOfPop,i)
         mut = []
         pop = []
         for e in range(0, 3):
@@ -415,6 +407,8 @@ def checkTerminationStatus(Times, oldFitness, minimumFitness):
         print "***** No need to continue. The fitness not changed in the last 30 generation"
         i = raw_input()
         exit(0)
+    elif minimumFitness == oldFitness:
+        Times += 1
     elif minimumFitness < oldFitness:
         oldFitness = minimumFitness
         Times = 0
@@ -440,8 +434,9 @@ def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
             print "***********************************"
             exit(0)
         fittingStatus = unfit
-        while (fittingStatus == unfit and Times <= 30):
-            Times += 1
+        attempt = 0
+        while (fittingStatus == unfit and attempt <= 30):
+            attempt += 1
             population = findNewPopulation(elite1, sumOfFitnesses, population)
             fittingStatus, fitness = validate_model(model, fileW,
                                                     population, TrainX, TrainY, ValidateX,
@@ -454,14 +449,18 @@ def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
                     it += 1
                 fittingStatus = unfit
 
+        # only one elite
         elite1, elite1Index = findFirstElite(fitness, population)
         #adding all the fitnesses and storing them in one dimensional array for
         #choosing the children for the next round
-        sumFitnesses = AddFitnessForFindingParents(fitness)
+        numOfPop = fitness.shape[0]
+        sumFitnesses = zeros(numOfPop)
+        for i in range(0, numOfPop):
+            sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
 
     return
 
-def getRandomRows(numRows, eliteRow):
+def getThreeRandomRows(numRows, eliteRow):
     i = []
     for z in range(0,3):
         while True:
@@ -513,11 +512,13 @@ def main():
 
     elite1, elite1Index = findFirstElite(fitness, population)
 
-
-    sumOfFitnesses = AddFitnessForFindingParents(fitness)
+    numOfPop = fitness.shape[0]
+    sumFitnesses = zeros(numOfPop)
+    for i in range(0, numOfPop):
+        sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
 
     print "Starting the Loop - time is = ", time.strftime("%H:%M:%S", time.localtime())
-    IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
+    IterateNtimes(model, fileW, fitness, sumFitnesses, population,
                   elite1, elite1Index,
                   TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
