@@ -416,60 +416,52 @@ def checkTerminationStatus(Times, oldFitness, minimumFitness):
         print "******************** Times is set back to 0 ********************\n"
     return oldFitness, Times
 
-def IterateNtimes(model, fileW, fitness, sumOfFitnesses, population,
-                  elite1, elite1Index,
-                  TrainX, TrainY, ValidateX, ValidateY, TestX, TestY):
-    unfit = 1000
-    numOfGenerations = 2000  # should be 2000
+
+def mlrbpso_newpop(localBestMatrix, velocity, population, 
+                    globalBestRow, numOfGen):
     numOfPop = population.shape[0]
     numOfFea = population.shape[1]
-    Times = 0
-    oldFitness = fitness.min()
-    for i in range(1, numOfGenerations):
-        oldFitness, Times = checkTerminationStatus(Times, oldFitness, fitness.min())
-        print("This is generation %d --- Minimum of fitness is: -> %2f" % (i, fitness.min()))
-        if (fitness.min() < 0.005):
-            print "***********************************"
-            print "Good: Fitness is low enough to quit"
-            print "***********************************"
-            exit(0)
-        fittingStatus = unfit
-        attempt = 0
-        while (fittingStatus == unfit and attempt <= 30):
-            attempt += 1
-            population = findNewPopulation(elite1, sumOfFitnesses, population)
-            fittingStatus, fitness = validate_model(model, fileW,
-                                                    population, TrainX, TrainY, ValidateX,
-                                                    ValidateY, TestX, TestY)
-            if (oldFitness < fitness.min()) :
-                it = 0
-                for j in fitness:
-                    if fitness.min() == j:
-                        feat = population[it]
-                    it += 1
-                fittingStatus = unfit
+    alpha = 0.5 - ((0.5-0.33)/numOfGen)
+    pval = (0.5) * (1 + alpha)
+    new_pop = random.random((numOfPop, numOfFea))
+    for j in range(numOfFea):
+        for i in range(numOfPop):
+            if (velocity[i][j] <= alpha):
+                new_pop[i][j] = population[i][j]
+            elif (velocity[i][j] > alpha and velocity[i][j] <= pval):
+                new_pop[i][j] = localBestMatrix[i][j]
+            elif (velocity[i][j] > pval and velocity[i][j] <= 1):
+                new_pop[i][j] = globalBestRow[j]
+            else:
+                new_pop[i][j] = population[i][j]
+    return new_pop
 
-        # only one elite
-        elite1, elite1Index = findFirstElite(fitness, population)
-        #adding all the fitnesses and storing them in one dimensional array for
-        #choosing the children for the next round
-        numOfPop = fitness.shape[0]
-        sumFitnesses = zeros(numOfPop)
-        for i in range(0, numOfPop):
-            sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
+def mlrbpso(model, fileW, fitness, sumOfFitnesses, population,
+                  elite1, elite1Index,
+                  TrainX, TrainY, ValidateX, ValidateY, TestX, TestY):
 
-    return
+    globalBestRow = elite1
+    globalBest_fitness = fitness[elite1Index] 
+    localBestMatrix = population
+    localBestMatrix_fitness = fitness
+    numOfPop = population.shape[0]
+    numOfFea = 3population.shape[1]
+    inertiaWeight = 0.9
+    velocity = random.random((numOfPop, numOfFea))
+    c1 = 2
+    c2 = 2
+    numOfGen = 0
+    unfit = 1000
+    fittingStatus = 0
 
-def getThreeRandomRows(numRows, eliteRow):
-    i = []
-    for z in range(0,3):
-        while True:
-            r = random.randint(0, numRows)
-            if r != eliteRow:
-                i.append(r)
-                break
-
-    return i
+    while fittingStatus == unfit:
+    for j in range(numOfFea):
+        for i in range(numOfPop):
+            term1 = c1 * random.random() * (localBestMatrix[i][j] - population[i][j])
+            term2 = c2 * random.random() * (globalBestRow[j] - population[i][j])
+            velocity[i][j] = (inertiaWeight * velocity[i][j]) + term1 + term2
+        
+    return None
 
 def createAnOutputFile():
     file_name = None
@@ -517,8 +509,7 @@ def main():
     for i in range(0, numOfPop):
         sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
 
-    print "Starting the Loop - time is = ", time.strftime("%H:%M:%S", time.localtime())
-    IterateNtimes(model, fileW, fitness, sumFitnesses, population,
+    mlrbpso(model, fileW, fitness, sumFitnesses, population,
                   elite1, elite1Index,
                   TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
