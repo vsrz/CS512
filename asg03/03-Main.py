@@ -124,7 +124,7 @@ def OnlySelectTheOnesColumns(popI):
     xi = xi.tolist()
     return xi
 
-def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, ValidateY, TestX, TestY):
+def validate_model(model, population, TrainX, TrainY, ValidateX, ValidateY, TestX, TestY):
     numOfPop = population.shape[0]
     fitness = zeros(numOfPop)
     c = 2
@@ -213,28 +213,7 @@ def validate_model(model, fileW, population, TrainX, TrainY, ValidateX, Validate
         yHatValidation[idx] = Yhat_validation.tolist()
         yTest[idx] = TestY.tolist()
         yHatTest[idx] = Yhat_test.tolist()
-
-
-    #printing the information into the file
-    write(model, fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2, \
-          trackQ2, trackR2PredValidation, trackR2PredTest, trackSEETrain, \
-          trackSDEPValidation, trackSDEPTest, yTrain, yHatTrain, yHatCV, \
-          yValidation, yHatValidation, yTest, yHatTest)
-
     return itFits, fitness
-
-def write(model, fileW, trackDesc, trackIdx, trackFitness, trackModel, trackR2, \
-          trackQ2, trackR2PredValidation, trackR2PredTest, trackSEETrain, \
-          trackSDEPValidation, trackSDEPTest, yTrain, yHatTrain, yHatCV, \
-          yValidation, yHatValidation, yTest, yHatTest):
-    for key in trackFitness.keys():
-        if fileW != '':
-            fileW.writerow([trackDesc[key], trackIdx[key], trackFitness[key], trackModel[key], \
-                trackR2[key], trackQ2[key], trackR2PredValidation[key], trackR2PredTest[key], \
-                trackSEETrain[key], trackSDEPValidation[key], trackSDEPTest[key], \
-                yTrain[key], yHatTrain[key], yHatCV[key], yValidation[key], yHatValidation[key], \
-                yTest[key], yHatTest[key]])
-        #fileOut.close()
 
 def placeDataIntoArray(fileName):
     with open(fileName, mode='rbU') as csvfile:
@@ -436,57 +415,68 @@ def mlrbpso_newpop(localBestMatrix, velocity, population,
                 new_pop[i][j] = population[i][j]
     return new_pop
 
-def mlrbpso(model, fileW, fitness, sumOfFitnesses, population,
+def mlrbpso_newLocalBest(localBestMatrix, localBestMatrix_fitness,
+                            population, fitness):
+    numOfPop = fitness.shape[0]
+    for i in range(numOfPop):
+        if (fitness[i] < localBestMatrix_fitness[i]):
+            localBestMatrix[i] = population[i]
+            localBestMatrix_fitness[i] = fitness[i]
+    
+    return localBestMatrix, localBestMatrix_fitness
+
+def mlrbpso_newGlobalBest(localBestMatrix, localBestMatrix_fitness, 
+                            globalBestRow, globalBestRow_fitness):
+    elite1, elite1Index = findFirstElite(localBestMatrix_fitness, localBestMatrix)
+    
+    if (localBestMatrix_fitness[elite1Index] > globalBestRow_fitness):
+        return globalBestRow, globalBestRow_fitness
+    else:
+        return elite1, localBestMatrix_fitness[elite1Index]
+
+def mlrbpso(model, fitness, sumOfFitnesses, population,
                   elite1, elite1Index,
                   TrainX, TrainY, ValidateX, ValidateY, TestX, TestY):
 
     globalBestRow = elite1
-    globalBest_fitness = fitness[elite1Index] 
+    globalBestRow_fitness = fitness[elite1Index] 
     localBestMatrix = population
     localBestMatrix_fitness = fitness
+    maxGenerations = 20
     numOfPop = population.shape[0]
-    numOfFea = 3population.shape[1]
+    numOfFea = population.shape[1]
     inertiaWeight = 0.9
     velocity = random.random((numOfPop, numOfFea))
     c1 = 2
     c2 = 2
-    numOfGen = 0
+    numOfGen = 1
     unfit = 1000
     fittingStatus = 0
 
-    while fittingStatus == unfit:
-    for j in range(numOfFea):
-        for i in range(numOfPop):
-            term1 = c1 * random.random() * (localBestMatrix[i][j] - population[i][j])
-            term2 = c2 * random.random() * (globalBestRow[j] - population[i][j])
-            velocity[i][j] = (inertiaWeight * velocity[i][j]) + term1 + term2
-        
+    for k in range(maxGenerations):
+        fittingStatus, fitness = validate_model(model, population, 
+                TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
+        for j in range(numOfFea):
+            for i in range(numOfPop):
+                term1 = c1 * random.random() * (localBestMatrix[i][j] - population[i][j])
+                term2 = c2 * random.random() * (globalBestRow[j] - population[i][j])
+                velocity[i][j] = (inertiaWeight * velocity[i][j]) + term1 + term2
+        population = mlrbpso_newpop(localBestMatrix, velocity, population,
+            globalBestRow, numOfGen)
+        numOfGen += 1
+        localBestMatrix, localBestMatrix_fitness = mlrbpso_newLocalBest(localBestMatrix,
+            localBestMatrix_fitness, population, fitness)
+        globalBestRow, globalBestRow_fitness = mlrbpso_newGlobalBest( localBestMatrix,
+            localBestMatrix_fitness, globalBestRow, globalBestRow_fitness)
+        print globalBestRow
+        print globalBestRow_fitness
+
     return None
-
-def createAnOutputFile():
-    file_name = None
-    algorithm = None
-    timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
-    if ( (file_name == None) and (algorithm != None)):
-        file_name = "{}_{}_gen{}_{}.csv".format(alg.__class__.__name__,
-                                                alg.model.__class__.__name__, alg.gen_max, timestamp)
-    elif file_name == None:
-        file_name = "{}.csv".format(timestamp)
-    fileOut = file(file_name, 'wb')
-    fileW = csv.writer(fileOut)
-
-    fileW.writerow(['Descriptor ID', 'No. Descriptors', 'Fitness', 'Model', 'R2', 'Q2', \
-                    'R2Pred_Validation', 'R2Pred_Test', 'SEE_Train', 'SDEP_Validation', 'SDEP_Test', \
-                    'y_Train', 'yHat_Train', 'yHat_CV', 'y_validation', 'yHat_validation', 'y_Test', 'yHat_Test'])
-
-    return fileW
 
 #main program starts in here
 def main():
     set_printoptions(threshold='nan')
 
-    #fileW = createAnOutputFile()
-    fileW = ''
     model = linear_model.LinearRegression()
     numOfPop = 200  # should be 200 population, lower is faster but less accurate
     numOfFea = 385  # should be 385 descriptors
@@ -499,7 +489,7 @@ def main():
     fittingStatus = unfit
     while fittingStatus == unfit:
         population = createInitialPopulation(numOfPop, numOfFea)
-        fittingStatus, fitness = validate_model(model, fileW, population,
+        fittingStatus, fitness = validate_model(model, population,
              TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
     elite1, elite1Index = findFirstElite(fitness, population)
@@ -509,7 +499,7 @@ def main():
     for i in range(0, numOfPop):
         sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
 
-    mlrbpso(model, fileW, fitness, sumFitnesses, population,
+    mlrbpso(model, fitness, sumFitnesses, population,
                   elite1, elite1Index,
                   TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
