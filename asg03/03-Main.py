@@ -422,6 +422,7 @@ def mlrbpso_newLocalBest(localBestMatrix, localBestMatrix_fitness,
         if (fitness[i] < localBestMatrix_fitness[i]):
             localBestMatrix[i] = population[i]
             localBestMatrix_fitness[i] = fitness[i]
+            print "New local best was found\n"
     
     return localBestMatrix, localBestMatrix_fitness
 
@@ -430,6 +431,8 @@ def mlrbpso_newGlobalBest(localBestMatrix, localBestMatrix_fitness,
     elite1, elite1Index = findFirstElite(localBestMatrix_fitness, localBestMatrix)
     
     if (localBestMatrix_fitness[elite1Index] > globalBestRow_fitness):
+        print "New global best\n"
+        print globalBestRow
         return globalBestRow, globalBestRow_fitness
     else:
         return elite1, localBestMatrix_fitness[elite1Index]
@@ -468,12 +471,13 @@ def mlrbpso(model, fitness, sumOfFitnesses, population,
             localBestMatrix_fitness, population, fitness)
         globalBestRow, globalBestRow_fitness = mlrbpso_newGlobalBest( localBestMatrix,
             localBestMatrix_fitness, globalBestRow, globalBestRow_fitness)
-        print globalBestRow
-        print globalBestRow_fitness
 
+    print "Local best matrix:\n"
+    print localBestMatrix
+    print "Fitness:\n"
+    print localBestMatrixFitness
     return None
 
-#main program starts in here
 def main():
     set_printoptions(threshold='nan')
 
