@@ -1,0 +1,118 @@
+jvillegas@jeremys-mbp:~/Documents/github/CS512/asg03$ !v
+vim 03-Main.py 
+
+Global Best Fitness: 0.400856086983
+
+Lowest fitness this generation: 0.400856086983
+Lowest fitness this generation: 0.400856086983
+Lowest fitness this generation: 0.400856086983
+Lowest fitness this generation: 0.400856086983
+Lowest fitness this generation: 0.400856086983
+Lowest fitness this generation: 0.406135074501
+New global best: 0.406135074501
+
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.406135074501
+Lowest fitness this generation: 0.392472333493
+New global best: 0.392472333493
+
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.392472333493
+Lowest fitness this generation: 0.380728302213
+New global best: 0.380728302213
+
+Lowest fitness this generation: 0.380728302213
+Lowest fitness this generation: 0.372328946199
+New global best: 0.372328946199
+
+Lowest fitness this generation: 0.372328946199
+Lowest fitness this generation: 0.372328946199
+Lowest fitness this generation: 0.372328946199
+Lowest fitness this generation: 0.372328946199
+Lowest fitness this generation: 0.372328946199
+Lowest fitness this generation: 0.368151292171
+New global best: 0.368151292171
+
+Lowest fitness this generation: 0.368151292171
+Lowest fitness this generation: 0.362383755214
+New global best: 0.362383755214
+
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.362383755214
+Lowest fitness this generation: 0.338815825585
+New global best: 0.338815825585
+
+Lowest fitness this generation: 0.336959076805
+New global best: 0.336959076805
+
+Lowest fitness this generation: 0.329366071109
+New global best: 0.329366071109
+
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Lowest fitness this generation: 0.329366071109
+Could not find a better fitness after 30 generations.
+Final Global Best Fitness is 0.329366071109
+
+Press ENTER or type command to continue

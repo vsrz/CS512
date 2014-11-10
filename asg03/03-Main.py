@@ -417,25 +417,30 @@ def mlrbpso_newpop(localBestMatrix, velocity, population,
 
 def mlrbpso_newLocalBest(localBestMatrix, localBestMatrix_fitness,
                             population, fitness):
+    lowest = 1000
     numOfPop = fitness.shape[0]
     for i in range(numOfPop):
         if (fitness[i] < localBestMatrix_fitness[i]):
             localBestMatrix[i] = population[i]
             localBestMatrix_fitness[i] = fitness[i]
-            print "New local best was found\n"
-    
+        if lowest > fitness[i]:
+            lowest = fitness[i]
+
+    print "Lowest fitness this generation: %s" % lowest
     return localBestMatrix, localBestMatrix_fitness
 
 def mlrbpso_newGlobalBest(localBestMatrix, localBestMatrix_fitness, 
-                            globalBestRow, globalBestRow_fitness):
+                            globalBestRow, globalBestRow_fitness, generations):
     elite1, elite1Index = findFirstElite(localBestMatrix_fitness, localBestMatrix)
     
     if (localBestMatrix_fitness[elite1Index] > globalBestRow_fitness):
-        print "New global best\n"
-        print globalBestRow
-        return globalBestRow, globalBestRow_fitness
+        return globalBestRow, globalBestRow_fitness, generations
     else:
-        return elite1, localBestMatrix_fitness[elite1Index]
+        if localBestMatrix_fitness[elite1Index] != globalBestRow_fitness:
+            print "New global best: %s\n" % localBestMatrix_fitness[elite1Index]
+            generations = 0
+        generations += 1
+        return elite1, localBestMatrix_fitness[elite1Index], generations
 
 def mlrbpso(model, fitness, sumOfFitnesses, population,
                   elite1, elite1Index,
@@ -445,7 +450,7 @@ def mlrbpso(model, fitness, sumOfFitnesses, population,
     globalBestRow_fitness = fitness[elite1Index] 
     localBestMatrix = population
     localBestMatrix_fitness = fitness
-    maxGenerations = 20
+    maxGenerations = 30
     numOfPop = population.shape[0]
     numOfFea = population.shape[1]
     inertiaWeight = 0.9
@@ -455,8 +460,10 @@ def mlrbpso(model, fitness, sumOfFitnesses, population,
     numOfGen = 1
     unfit = 1000
     fittingStatus = 0
+    generations = 0
 
-    for k in range(maxGenerations):
+    print "Global Best Fitness: %s\n" % globalBestRow_fitness 
+    while generations < 30:
         fittingStatus, fitness = validate_model(model, population, 
                 TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
         for j in range(numOfFea):
@@ -469,13 +476,10 @@ def mlrbpso(model, fitness, sumOfFitnesses, population,
         numOfGen += 1
         localBestMatrix, localBestMatrix_fitness = mlrbpso_newLocalBest(localBestMatrix,
             localBestMatrix_fitness, population, fitness)
-        globalBestRow, globalBestRow_fitness = mlrbpso_newGlobalBest( localBestMatrix,
-            localBestMatrix_fitness, globalBestRow, globalBestRow_fitness)
+        globalBestRow, globalBestRow_fitness, generations = mlrbpso_newGlobalBest(localBestMatrix,
+            localBestMatrix_fitness, globalBestRow, globalBestRow_fitness, generations)
 
-    print "Local best matrix:\n"
-    print localBestMatrix
-    print "Fitness:\n"
-    print localBestMatrixFitness
+    print "Could not find a better fitness after %s generations.\nFinal Global Best Fitness is %s" % (maxGenerations, globalBestRow_fitness)
     return None
 
 def main():
