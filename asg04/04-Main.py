@@ -489,12 +489,17 @@ def createInitialVelocityMatrix(numOfPop, numOfFeat):
 
 def createInitialPopulation(numOfPop, numOfFeat, V, Lambda):
     X = random.random((numOfPop, numOfFeat))
+    j = 0
     for i in range(numOfPop):
-        for j in range(numOfFeat):
-            if (V[i,j] <= Lambda):
-                X[i,j] = 1;
-            else:
-                X[i,j] = 0;
+        valid = False
+        num = range(numOfFeat)
+        while not valid:
+            for j in range(numOfFeat):
+                if (V[i,j] <= Lambda):
+                    X[i,j] = 1;
+                    valid = True
+                else:
+                    X[i,j] = 0;
     return X
     
 # step 5
@@ -511,6 +516,8 @@ def getNextVelocityMatrix(numOfPop, numOfFeat, V, Fval):
 
 def updateGlobalBest(globalBest, globalBestFitness, population, fitness):
     row = 0
+    #print fitness
+    #print globalBestFitness
     for each in fitness:
         if each < globalBestFitness:
             globalBestFitness = each 
@@ -521,10 +528,8 @@ def updateGlobalBest(globalBest, globalBestFitness, population, fitness):
     
 #createNewPopulation(numOfPop, unmOfFeat, velocityMatrix, population, globalBestRow, alpha, beta)
 #step 6
-def createNewPopulation(numOfPop, numOfFeat, V, P, G, alpha, beta):
+def createNewPopulation(numOfPop, numOfFeat, V, P, G, alpha, beta, L):
     X = random.random((numOfPop, numOfFeat))
-    print X
-    exit()
     for i in range(numOfPop):
         for j in range(numOfFeat):
             if (alpha < V[i,j]) and (V[i,j] <= 0.5*(1+alpha)):
@@ -532,9 +537,9 @@ def createNewPopulation(numOfPop, numOfFeat, V, P, G, alpha, beta):
             elif ((0.5*(1+alpha)) < V[i,j]) and (V[i,j] <= (1-beta)):
                 X[i,j] = G[j]; # the global vector value
             elif (1-beta) < V[i,j] and V[i,j] <=1:
-                X[i,j] = 1 - X[i,j]
+                X[i,j] = 1 - L[i,j]
             else:
-                X[i,j] = X[i,j]; # remains unchanged
+                X[i,j] = L[i,j]; # remains unchanged
     return X
 
 def getNewLocalBest(localBestMatrix, localBestMatrix_fitness,
@@ -548,7 +553,6 @@ def getNewLocalBest(localBestMatrix, localBestMatrix_fitness,
         if lowest > fitness[i]:
             lowest = fitness[i]
 
-    print "Lowest fitness this generation: %s" % lowest
     return localBestMatrix, localBestMatrix_fitness
 
 def main():
@@ -557,23 +561,25 @@ def main():
     model = linear_model.LinearRegression()
     numOfPop = 50
     numOfFeat = 385
-    Lambda = 0.01
+    Lambda = 0.02
     Fval = 0.7
     alpha = 0.5
     beta = 0.004
+    max_generations = 50
 
     TrainX, TrainY, ValidateX, ValidateY, TestX, TestY = getAllOfTheData()
     TrainX, ValidateX, TestX = rescaleTheData(TrainX, ValidateX, TestX)
 
     velocityMatrix = createInitialVelocityMatrix(numOfPop, numOfFeat)
     population = createInitialPopulation(numOfPop, numOfFeat, velocityMatrix, Lambda)
+
     fittingStatus, fitness = validate_model(model, population,
          TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
     localBest = population
     localBestFitness = fitness
 
-    globalBest = random.random((1, numOfFeat)) 
+    globalBest = localBest
     globalBestFitness = 99
 
     globalBest, globalBestFitness = updateGlobalBest(globalBest, 
@@ -581,18 +587,14 @@ def main():
 
     fittingStatus, fitness = validate_model(model, population,
         TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
-    
-    print globalBestFitness
-    exit()
     unfit = True 
     retry = 0
     generations = 0
     while unfit:
         generations += 1
-
         # get a new population
         population = createNewPopulation(numOfPop, numOfFeat, velocityMatrix,
-            population, globalBest, alpha, beta)
+            population, globalBest, alpha, beta, population)
 
         # calc the fitness of the new population
         fittingStatus, fitness = validate_model(model, population,
@@ -603,42 +605,23 @@ def main():
             population, fitness)
 
         # update the global best row if necessary
-        oldBest = globalBest
+        oldBest = globalBestFitness
         globalBest, globalBestFitness = updateGlobalBest(globalBest, 
-            globalBestFitness, localBest, localBestFitness)
-        if oldBest is not globalBest:
-            retry = 0
+            globalBestFitness, population, fitness)
+        if oldBest == globalBestFitness:
+            retry += 1
 
         # stop if the number of iterations have reached the 
-        if globalBestFitness < 0.2 or retry > 30:
+        if retry > max_generations:
             unfit = False
-            if retry > 30:
+            if retry > max_generations:
                 print "Maximum iterations reached"
             print "Fitness is %d" % globalBestFitness
         else:
-            if globalBestFitness != oldBest:
-                print "This is generation %d. Best Fitness is %d" % (generations, globalBestFitness)
+            #if globalBestFitness != oldBest:
+            print "This is generation %d. Try %d/%d. Best Fitness is %s" % (generations, retry, max_generations, globalBestFitness)
     
     exit()
-
-    unfit = 1000  # when to stop when the model isn't doing well
-
-    fittingStatus = unfit
-    while fittingStatus == unfit:
-        population = createInitialPopulation(numOfPop, numOfFea, velocityMatrix, Lambda)
-        fittingStatus, fitness = validate_model(model, population,
-             TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
-
-    elite1, elite1Index = findFirstElite(fitness, population)
-
-    numOfPop = fitness.shape[0]
-    sumFitnesses = zeros(numOfPop)
-    for i in range(0, numOfPop):
-        sumFitnesses[i] = fitness[i] + sumFitnesses[i - 1]
-
-    mlrbpso(model, fitness, sumFitnesses, population,
-                  elite1, elite1Index,
-                  TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
     return
 
