@@ -516,8 +516,6 @@ def getNextVelocityMatrix(numOfPop, numOfFeat, V, Fval):
 
 def updateGlobalBest(globalBest, globalBestFitness, population, fitness):
     row = 0
-    #print fitness
-    #print globalBestFitness
     for each in fitness:
         if each < globalBestFitness:
             globalBestFitness = each 
@@ -528,7 +526,7 @@ def updateGlobalBest(globalBest, globalBestFitness, population, fitness):
     
 #createNewPopulation(numOfPop, unmOfFeat, velocityMatrix, population, globalBestRow, alpha, beta)
 #step 6
-def createNewPopulation(numOfPop, numOfFeat, V, P, G, alpha, beta, L):
+def createNewPopulation(numOfPop, numOfFeat, V, P, G, alpha, beta):
     X = random.random((numOfPop, numOfFeat))
     for i in range(numOfPop):
         for j in range(numOfFeat):
@@ -537,10 +535,29 @@ def createNewPopulation(numOfPop, numOfFeat, V, P, G, alpha, beta, L):
             elif ((0.5*(1+alpha)) < V[i,j]) and (V[i,j] <= (1-beta)):
                 X[i,j] = G[j]; # the global vector value
             elif (1-beta) < V[i,j] and V[i,j] <=1:
-                X[i,j] = 1 - L[i,j]
+                X[i,j] = 1 - P[i,j]
             else:
-                X[i,j] = L[i,j]; # remains unchanged
+                X[i,j] = P[i,j]; # remains unchanged
     return X
+
+def writeMatrix(localBestMatrix, localBestMatrix_fitness, globalBest, globalBestFitness):
+    f = open('output.txt','w')
+
+    numOfFeat = len(localBestMatrix[0])
+    numOfPop = len(localBestMatrix)
+    f.write('\nFitness, Local Best Matrix\n')
+    for j in range(numOfPop):
+        f.write('\n%5s ' % localBestMatrix_fitness[j])
+        for i in range(numOfFeat):
+            f.write('%5s ' % localBestMatrix[j][i])
+
+    f.write('\nFitness, Global Best\n')
+    f.write('%5s ' % globalBestFitness)
+    for i in range(numOfFeat):
+        f.write('%5s ' % localBestMatrix[j][i])
+        
+    f.close()
+    return
 
 def getNewLocalBest(localBestMatrix, localBestMatrix_fitness,
                             population, fitness):
@@ -561,7 +578,7 @@ def main():
     model = linear_model.LinearRegression()
     numOfPop = 50
     numOfFeat = 385
-    Lambda = 0.02
+    Lambda = 0.01
     Fval = 0.7
     alpha = 0.5
     beta = 0.004
@@ -579,12 +596,12 @@ def main():
     localBest = population
     localBestFitness = fitness
 
-    globalBest = localBest
+    globalBest = localBest[0]
     globalBestFitness = 99
-
     globalBest, globalBestFitness = updateGlobalBest(globalBest, 
         globalBestFitness, population, fitness)
 
+    random.seed(410)
     fittingStatus, fitness = validate_model(model, population,
         TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
     unfit = True 
@@ -594,9 +611,10 @@ def main():
         generations += 1
         # get a new population
         population = createNewPopulation(numOfPop, numOfFeat, velocityMatrix,
-            population, globalBest, alpha, beta, population)
+            population, globalBest, alpha, beta)
 
         # calc the fitness of the new population
+        random.seed(410)
         fittingStatus, fitness = validate_model(model, population,
              TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
@@ -616,7 +634,8 @@ def main():
             unfit = False
             if retry > max_generations:
                 print "Maximum iterations reached"
-            print "Fitness is %d" % globalBestFitness
+            print "Fitness is %s" % globalBestFitness
+            writeMatrix(localBest, localBestFitness, globalBest, globalBestFitness)
         else:
             #if globalBestFitness != oldBest:
             print "This is generation %d. Try %d/%d. Best Fitness is %s" % (generations, retry, max_generations, globalBestFitness)
