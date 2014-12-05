@@ -131,6 +131,7 @@ def validate_model(model, population, TrainX, TrainY, ValidateX, ValidateY, Test
     false = 0
     true = 1
     predictive = false
+    rvals = zeros(numOfPop)
 
     trackDesc, trackIdx, trackFitness, trackModel, trackR2, trackQ2, \
     trackR2PredValidation, trackR2PredTest, trackSEETrain, \
@@ -183,7 +184,7 @@ def validate_model(model, population, TrainX, TrainY, ValidateX, ValidateY, Test
         # Compute predicted Y_hat for training set.
         Yhat_train = model.predict(X_train_masked)
         r2_train = r2(TrainY, Yhat_train)
-
+        rvals[i] = r2_train
         # Standard error of estimate
         s = see(X_train_masked.shape[1], TrainY, Yhat_train)
         sdep_validation = sdep(ValidateY, Yhat_validation)
@@ -213,7 +214,7 @@ def validate_model(model, population, TrainX, TrainY, ValidateX, ValidateY, Test
         yHatValidation[idx] = Yhat_validation.tolist()
         yTest[idx] = TestY.tolist()
         yHatTest[idx] = Yhat_test.tolist()
-    return itFits, fitness
+    return rvals, itFits, fitness
 
 def placeDataIntoArray(fileName):
     with open(fileName, mode='rbU') as csvfile:
@@ -506,12 +507,15 @@ def createInitialPopulation(numOfPop, numOfFeat, V, Lambda):
 def getNextVelocityMatrix(numOfPop, numOfFeat, V, Fval):
     rnd = getThreeRandomRows(numOfPop)
     for i in range(numOfPop):
-        for j in range(numOfFeat):
-            r = rnd[2] + Fval * (rnd[1] - rnd[0])
-            if (random.uniform(0,1) < Fval):
-               V[i,j] = r[j]
-            else:
-                V[i,j] = V[i,j]
+        valid = False
+        while not valid:
+            for j in range(numOfFeat):
+                r = rnd[2] + Fval * (rnd[1] - rnd[0])
+                if (random.uniform(0,1) < Fval):
+                   valid = True
+                   V[i,j] = r
+                else:
+                   V[i,j] = V[i,j]
     return V
 
 def updateGlobalBest(globalBest, globalBestFitness, population, fitness):
@@ -575,14 +579,19 @@ def getNewLocalBest(localBestMatrix, localBestMatrix_fitness,
 def main():
     set_printoptions(threshold='nan')
 
-    model = linear_model.LinearRegression()
-    numOfPop = 50
-    numOfFeat = 385
+    #model = linear_model.LinearRegression()
+    model = svm.SVR()
+    numOfPop = 37
+    numOfFeat = 396
     Lambda = 0.01
     Fval = 0.7
     alpha = 0.5
     beta = 0.004
-    max_generations = 50
+    max_generations = 500
+    rvals = zeros(numOfPop)
+    seedval = 44
+    print "Creating initial population, velocity matrix, and initial feature selection."
+    print "Values\nPopulation: %s\nFeatures: %s\nLambda: %s\nFval: %s\nAlpha: %s\nBeta: %s\nMaximum generations: %s\nRandom Seed Value: %s" % (numOfPop, numOfFeat, Lambda, Fval, alpha, beta, max_generations, seedval)
 
     TrainX, TrainY, ValidateX, ValidateY, TestX, TestY = getAllOfTheData()
     TrainX, ValidateX, TestX = rescaleTheData(TrainX, ValidateX, TestX)
@@ -590,7 +599,7 @@ def main():
     velocityMatrix = createInitialVelocityMatrix(numOfPop, numOfFeat)
     population = createInitialPopulation(numOfPop, numOfFeat, velocityMatrix, Lambda)
 
-    fittingStatus, fitness = validate_model(model, population,
+    rvals, fittingStatus, fitness = validate_model(model, population,
          TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
     localBest = population
@@ -601,21 +610,22 @@ def main():
     globalBest, globalBestFitness = updateGlobalBest(globalBest, 
         globalBestFitness, population, fitness)
 
-    random.seed(410)
-    fittingStatus, fitness = validate_model(model, population,
-        TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
+    random.seed(seedval)
     unfit = True 
-    retry = 0
+    retry = 1
     generations = 0
     while unfit:
         generations += 1
+        # find the next velocity matrix
+        velocityMatrix = getNextVelocityMatrix(numOfPop, numOfFeat, velocityMatrix, Fval)
+
         # get a new population
         population = createNewPopulation(numOfPop, numOfFeat, velocityMatrix,
             population, globalBest, alpha, beta)
 
         # calc the fitness of the new population
-        random.seed(410)
-        fittingStatus, fitness = validate_model(model, population,
+        random.seed(seedval)
+        rvals, fittingStatus, fitness = validate_model(model, population,
              TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
 
         # update the local best
@@ -626,20 +636,30 @@ def main():
         oldBest = globalBestFitness
         globalBest, globalBestFitness = updateGlobalBest(globalBest, 
             globalBestFitness, population, fitness)
-        if oldBest == globalBestFitness:
-            retry += 1
 
         # stop if the number of iterations have reached the 
         if retry > max_generations:
+            rvals, f, f2 = validate_model(model, localBest, TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
+            tmp = 0.0
+            for each in rvals:
+               tmp += each
+            rval = tmp / numOfPop
             unfit = False
             if retry > max_generations:
-                print "Maximum iterations reached"
-            print "Fitness is %s" % globalBestFitness
+                print "Maximum iterations of %s has been reached" % max_generations
+            print "Global best fitness is %s with an R^2 of %s" % (globalBestFitness, rval)
             writeMatrix(localBest, localBestFitness, globalBest, globalBestFitness)
         else:
-            #if globalBestFitness != oldBest:
-            print "This is generation %d. Try %d/%d. Best Fitness is %s" % (generations, retry, max_generations, globalBestFitness)
-    
+            if globalBestFitness != oldBest or generations == 1:
+                rvals, f, f2 = validate_model(model, localBest, TrainX, TrainY, ValidateX, ValidateY, TestX, TestY)
+                tmp = 0.0
+                for each in rvals:
+                   tmp += each
+                rval = tmp / numOfPop
+                print "This is generation %d. Try %d/%d. Best Fitness is %s. R: %s " % (generations, retry, max_generations, globalBestFitness, rval)
+                retry = 1
+            elif oldBest == globalBestFitness:
+                retry += 1
     exit()
 
     return

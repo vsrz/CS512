@@ -1,0 +1,9 @@
+This is generation 1. Try 1/500. Best Fitness is 0.562528744365. R: 0.466369992693 
+This is generation 33. Try 33/500. Best Fitness is 0.520145939472. R: 0.50244674163 
+This is generation 142. Try 109/500. Best Fitness is 0.472658237063. R: 0.523289526055 
+This is generation 280. Try 138/500. Best Fitness is 0.46146965964. R: 0.548480714865 
+This is generation 620. Try 340/500. Best Fitness is 0.468675331493. R: 0.548783368406 
+This is generation 1005. Try 385/500. Best Fitness is 0.366587645595. R: 0.6804166007 
+Maximum iterations of 500 has been reached
+Global best fitness is 0.366587645595 with an R^2 of 0.681085928246
+
